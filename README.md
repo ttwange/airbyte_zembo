@@ -42,6 +42,8 @@ airbyte_zembo/
 - **Docker & Docker-Compose**
 - **Prefect Installed**
 - **ClickHouse Client**
+- **Remember to create .my.cnf file**
+
 
 ### **2️⃣ Install Dependencies**
 - To start create a python virtual environment
