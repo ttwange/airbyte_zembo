@@ -1,0 +1,14 @@
+18:55:50.012 | INFO    | prefect - Starting temporary server on http://127.0.0.1:8364
+See https://docs.prefect.io/3.0/manage/self-host#self-host-a-prefect-server for more information on running a dedicated Prefect server.
+18:56:18.837 | INFO    | Flow run 'functional-seriema' - Beginning flow run 'functional-seriema' for flow 'validate-data'
+18:56:21.050 | INFO    | Task run 'get_mysql_count-e93' - Finished in state Completed()
+18:56:22.942 | INFO    | Task run 'get_clickhouse_count-c87' - Finished in state Completed()
+18:56:24.410 | INFO    | Task run 'compare_counts-0f4' - Finished in state Completed()
+18:56:26.195 | INFO    | Task run 'get_mysql_count-4a4' - Finished in state Completed()
+18:56:27.861 | INFO    | Task run 'get_clickhouse_count-6af' - Finished in state Completed()
+18:56:29.330 | INFO    | Task run 'compare_counts-d84' - Finished in state Completed()
+18:56:31.069 | INFO    | Task run 'get_mysql_count-b76' - Finished in state Completed()
+18:56:32.743 | INFO    | Task run 'get_clickhouse_count-338' - Finished in state Completed()
+18:56:34.349 | INFO    | Task run 'compare_counts-1f6' - Finished in state Completed()
+18:56:34.564 | INFO    | Flow run 'functional-seriema' - Finished in state Completed()
+18:56:34.595 | INFO    | prefect - Stopping temporary server on http://127.0.0.1:8364

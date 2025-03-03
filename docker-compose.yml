@@ -1,0 +1,130 @@
+version: '3'
+
+services:
+  master:
+    image: mysql:5.6
+    container_name: master
+    hostname: mysql
+    restart: always                       
+    environment:
+      MYSQL_DATABASE: 'Zembo'              
+      MYSQL_USER: 'user'                
+      MYSQL_PASSWORD: 'password'          
+      MYSQL_ROOT_PASSWORD: 'password'     
+    command: --server-id=1 --log-bin=mysql-bin --binlog-format=ROW
+    ports:
+      - '3306:3306'                       
+    expose:
+      - '3306'
+    volumes:
+      - ./mysql-db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 30s
+      retries: 5
+      start_period: 10s
+      timeout: 10s
+    networks:
+      - monitoring
+
+  slave:
+    image: mysql:5.6
+    container_name: slave
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: Zembo
+      MYSQL_USER: user
+      MYSQL_PASSWORD: userpass
+    command: --server-id=2 --read-only=1
+    volumes:
+      - ./slave-db:/var/lib/mysql
+    networks:
+      - monitoring
+    ports:
+        - '3307:3306'
+
+  mysql-exporter:
+    image: prom/mysqld-exporter
+    container_name: mysql-exporter
+    hostname: mysql-exporter
+    depends_on:
+     - master
+    command: 
+     - --config.my-cnf=/cfg/.my.cnf
+     - --mysqld.address=mysql:3306
+    volumes:
+      - "./.my.cnf:/cfg/.my.cnf"
+    ports:
+      - 9104:9104
+    networks:
+      - monitoring
+
+  clickhouse1:
+    image: clickhouse/clickhouse-server:24.3.8
+    environment:
+      REPLICA_NAME: ch1-0
+      SHARD_NAME: ch1
+    hostname: clickhouse1
+    container_name: clickhouse1
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+      - "8001:8001"  
+    expose:
+      - "8123"
+      - "9000"
+      - "8001"
+    volumes:
+      - ./clickhouse:/docker-entrypoint-initdb.d
+      - ./clickhouse:/var/lib/clickhouse/user_files
+      - ./clickhouse/node/config.xml:/etc/clickhouse-server/config.xml
+      - ./clickhouse/node/users.xml:/etc/clickhouse-server/users.xml
+    networks:
+      - monitoring
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    ports:
+      - "3000:3000"
+    networks:
+      - monitoring
+
+  influxdb:
+    image: influxdb:latest
+    container_name: influxdb
+    ports:
+      - "8086:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=password
+      - DOCKER_INFLUXDB_INIT_ORG=myorg
+      - DOCKER_INFLUXDB_INIT_BUCKET=sensor_data
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=K49ea6K6amUsrJUmv
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+    networks:
+      - monitoring 
+
+volumes:
+  influxdb-data:
+    driver: local
+
+networks:
+  monitoring:
+    driver: bridge
+    name: monitoring
